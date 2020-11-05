@@ -4,22 +4,26 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 public class Shop {
-    private String shopName;
+    private String name;
     private Random random;
 
-    public Shop(String shopName) {
-        this.shopName = shopName;
+    public Shop(String name) {
+        this.name = name;
         this.random = new Random();
+    }
+
+    public String getName() {
+        return name;
     }
 
     /*
      *  1초동안 블록되는 동기 메소드
      * */
-    public double getPrice(String product) {
+    public double getPriceSync(String product) {
         return someLongComputation(product);
     }
 
@@ -69,22 +73,50 @@ public class Shop {
     }
 
     public static void main(String[] args) {
-        List<Shop> shops = Arrays.asList(new Shop("BestPrice"),
+
+//        Shop shop = new Shop("my shop");
+//        Future<Double> priceInFuture = shop.getPriceAsync("my favorite product"); //상점에 제품가격 요청
+//        doSomethingElse(); //제품가격 계산하는 동안 다른 작업 수행
+//        try {
+//            double price = priceInFuture.get(); //가격정보를 가져온다. 처리되지 않으면 블럭된다.
+//            System.out.println(price);
+//        } catch (InterruptedException e) {
+//            System.out.println("Interrupt occurred during execution.");
+//        } catch (ExecutionException e) {
+//            System.out.println("exception occurred during operation.");
+//        } catch (Exception e) {
+//            System.out.println("exception occurred.");
+//        }
+
+
+        //동기호출
+        List<Shop> shops = Arrays.asList(
+                new Shop("BestPrice"),
                 new Shop("LetsSaveBig"),
                 new Shop("MyFavoriteShop"),
-                new Shop("BuyItAll"));
-        Shop shop = new Shop();
-        Future<Double> priceInFuture = shop.getPriceAsync("my favorite product"); //상점에 제품가격 요청
-        doSomethingElse(); //제품가격 계산하는 동안 다른 작업 수행
-        try {
-            double price = priceInFuture.get(); //가격정보를 가져온다. 처리되지 않으면 블럭된다.
-            System.out.println(price);
-        } catch (InterruptedException e) {
-            System.out.println("Interrupt occurred during execution.");
-        } catch (ExecutionException e) {
-            System.out.println("exception occurred during operation.");
-        } catch (Exception e) {
-            System.out.println("exception occurred.");
-        }
+                new Shop("BuyItAll"),
+                new Shop("EBay"),
+                new Shop("BestPrice1"),
+                new Shop("LetsSaveBig1"),
+                new Shop("MyFavoriteShop1"),
+                new Shop("BuyItAll1"),
+                new Shop("EBay1"),
+                new Shop("BestPrice2"),
+                new Shop("LetsSaveBig2"),
+                new Shop("MyFavoriteShop2"),
+                new Shop("BuyItAll2"),
+                new Shop("EBay2"),
+                new Shop("EBay16"),
+                new Shop("EBay17"));
+
+
+        System.out.println("cpu : " + Runtime.getRuntime().availableProcessors());
+
+        long start = System.nanoTime();
+        PriceFinder finder = new PriceFinder();
+        System.out.println(finder.findPrices("my product"));
+        System.out.println();
+        long duration = (System.nanoTime() - start) / 1_000_000; System.out.println("완료 시간: " + duration + " msecs");
     }
+
 }
