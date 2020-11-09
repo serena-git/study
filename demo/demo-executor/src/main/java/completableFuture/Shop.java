@@ -1,5 +1,7 @@
 package completableFuture;
 
+import utils.Timers;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
@@ -24,8 +26,11 @@ public class Shop {
     /*
      *  1초동안 블록되는 동기 메소드
      * */
-    public double getPriceSync(String product) {
-        return someLongComputation(product);
+    public String getPriceSync(String product) {
+        Random random = new Random();
+        double price = someLongComputation(product);
+        Discount.Code code = Discount.Code.values()[random.nextInt(Discount.Code.values().length)];
+        return String.format("%s:%.2f:%s",name, price, code);
     }
 
     /*
@@ -56,47 +61,11 @@ public class Shop {
     }
 
     private double someLongComputation(String product) {
-        delay();
+        Timers.delay();
         return random.nextDouble() + product.charAt(0) + product.charAt(1);
-    }
-
-    private void delay() {
-        try {
-            Thread.sleep(1000L); // block for 1sec.
-            throw new IllegalArgumentException("not avaliable");
-        } catch (InterruptedException exception) {
-            throw new RuntimeException(exception);
-        }
     }
 
     private static void doSomethingElse() {
         System.out.println("Do something else ..");
     }
-
-    public static void main(String[] args) {
-
-        Shop shop = new Shop("my shop");
-        CompletableFuture<Double> priceInFuture = shop.getPriceAsync("my favorite product"); //상점에 제품가격 요청
-        doSomethingElse(); //제품가격 계산하는 동안 다른 작업 수행
-        try {
-            double price = priceInFuture.get(); //가격정보를 가져온다. 처리되지 않으면 블럭된다.(블럭을 유발하는 메소드)
-            System.out.println(price);
-        } catch (InterruptedException e) {
-            System.out.println("Interrupt occurred during execution.");
-        } catch (ExecutionException e) {
-            System.out.println("exception occurred during operation.");
-        } catch (Exception e) {
-            System.out.println("exception occurred.");
-        }
-
-
-        System.out.println("cpu : " + Runtime.getRuntime().availableProcessors());
-
-        long start = System.nanoTime();
-        PriceFinder finder = new PriceFinder();
-        System.out.println(finder.findPricesWithFuture("my product"));
-        System.out.println();
-        long duration = (System.nanoTime() - start) / 1_000_000; System.out.println("완료 시간: " + duration + " msecs");
-    }
-
 }
